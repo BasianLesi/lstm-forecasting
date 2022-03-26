@@ -22,6 +22,14 @@ two_day_forecast_url = f"https://api.openweathermap.org/data/2.5/onecall?lat={la
 def generate_url(_seconds):
     return f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={_seconds}&appid={api_key}&units=metric"
 
+def get_forecasting_data():
+    df = weather_api_call(two_day_forecast_url)
+    df1 = pd.read_csv("data/weather/forecast_data.csv")
+    df_concat = pd.concat([df, df1])
+    df_concat = df_concat.sort_values(by='Time')
+    df_concat.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
+    df_concat.to_csv(f"data/weather/forecast_data.csv", index=False)
+
 def get_historical_5days_data():
     days = []
     seconds = int(datetime.today().timestamp())
@@ -41,7 +49,7 @@ def get_historical_5days_data():
     now = datetime.fromtimestamp(seconds).strftime("%d-%m-%Y %H:%M")
     mask = (df['Time'] < now) 
     df = df.loc[mask]
-    df.to_csv(f"data/weather/historical_data_1.csv", index=False)
+    df.to_csv(f"data/weather/historical_data.csv", index=False)
 
 def normalize_column(df_forecast:pd.DataFrame, col:int = 1, a:int=0, b:int=1):
     df = pd.read_csv(processed_data_dir + "merged.csv")
@@ -96,6 +104,7 @@ def weather_api_call(url):
 # conc_df.to_csv("data/processed/forecast_data_normalized.csv", index=False)
 
 get_historical_5days_data()
+get_forecasting_data()
 
 
 

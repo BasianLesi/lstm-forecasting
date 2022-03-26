@@ -1,10 +1,8 @@
 import sys
 import os
+from config import *
 
-os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.6/bin")
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 import pandas as pd
 import numpy as np
@@ -23,15 +21,7 @@ from keras.losses import MeanSquaredError
 from keras.metrics import RootMeanSquaredError
 from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
-from global_variables import config as g
 
-# ROOT_DIR = os.path.dirname(os.path.abspath("top_level_file.txt"))
-
-ROOT_DIR = g.ROOT_DIR
-raw_data_dir = g.raw_data_dir
-processed_data_dir = g.processed_data_dir
-model_dir = g.model_dir
-figures_dir = g.figures_dir
 
 def df_to_X_y3(df:pd.DataFrame, look_back:int=7, pred_col_name:str = "PV power"):
   y_index = df.columns.get_loc(pred_col_name)
@@ -71,7 +61,7 @@ def train_model(df:pd.DataFrame, model_name:str = "lstm_model_v1", look_back:int
     X_val1, y_val1 = X[train_size:train_size+val_size], y[train_size:train_size+val_size]
     # X_test1, y_test1 = X[train_size+val_size:], y[train_size+val_size:]
 
-    model_dir = g.model_dir + model_name
+    model_dir = model_dir + model_name
     create_directory_if_missing(model_dir)
 
     model = Sequential()

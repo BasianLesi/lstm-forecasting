@@ -19,7 +19,7 @@ from keras.layers import *
 from keras.callbacks import ModelCheckpoint
 from keras.losses import MeanSquaredError
 from keras.metrics import RootMeanSquaredError
-from tensorflow.keras.optimizers import Adam
+from keras.optimizers import Adam
 import matplotlib.pyplot as plt
 
 
@@ -43,7 +43,6 @@ def normalize_column(df:pd.DataFrame, col:int = 1, a:int=0, b:int=1):
 
 def reverse_normalize(df:pd.DataFrame, col_name:str, a:int=0, b:int=1):
     a = pd.read_csv(processed_data_dir + "merged.csv")
-    
     x_min = a[col_name].min()
     x_max = a[col_name].max()
     print("xmin: ", x_min)
@@ -60,7 +59,6 @@ def train_model(df:pd.DataFrame, model_name:str = "lstm_model_v1", look_back:int
     X_train1, y_train1 = X[:train_size], y[:train_size]
     X_val1, y_val1 = X[train_size:train_size+val_size], y[train_size:train_size+val_size]
     # X_test1, y_test1 = X[train_size+val_size:], y[train_size+val_size:]
-
     model_dir = model_dir + model_name
     create_directory_if_missing(model_dir)
 
@@ -166,3 +164,9 @@ def convert_model_to_tflite(model_dir:str, model_name:str):
   tflite_model = converter.convert()
   with open(model_dir + model_name, 'wb') as f:
     f.write(tflite_model)
+    
+    
+
+
+
+

@@ -5,6 +5,7 @@ import requests
 import json
 from config import *
 
+
 day = 60*60*24
 today = date.today()
 seconds = int(datetime.today().timestamp())
@@ -19,8 +20,25 @@ yesterday_url = f"https://api.openweathermap.org/data/2.5/onecall/timemachine?la
 today_url     = f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={seconds}&appid={api_key}&units=metric"
 two_day_forecast_url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=alerts&appid={api_key}&units=metric"
 
+def update_global_variables(): # a function that updates global variables
+    global today, seconds, tomorrow,yesterday, today_url, yesterday_url, two_day_forecast_url
+    today = date.today()
+    seconds = int(datetime.today().timestamp())
+    tomorrow = seconds + day;
+    yesterday = seconds - day;
+    today = datetime.fromtimestamp(seconds).strftime("%d-%m-%Y %H:%M")
+
+    yesterday_url = f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={yesterday}&appid={api_key}&units=metric"
+    today_url     = f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={seconds}&appid={api_key}&units=metric"
+    two_day_forecast_url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=alerts&appid={api_key}&units=metric"
+
+
 def generate_url(_seconds):
     return f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={_seconds}&appid={api_key}&units=metric"
+
+def get_today_weather():
+    df = weather_api_call(today_url)
+    df.to_csv(f"data/weather/today_weather.csv", index=False)
 
 def get_forecasting_data():
     day = 24 #hours
@@ -107,7 +125,7 @@ def weather_api_call(url):
 get_historical_5days_data()
 get_forecasting_data()
 
-
+get_today_weather()
 
 
 

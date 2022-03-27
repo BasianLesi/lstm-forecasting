@@ -23,9 +23,10 @@ def generate_url(_seconds):
     return f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={_seconds}&appid={api_key}&units=metric"
 
 def get_forecasting_data():
+    day = 24 #hours
     df = weather_api_call(two_day_forecast_url)
     df1 = pd.read_csv("data/weather/forecast_data.csv")
-    df_concat = pd.concat([df, df1])
+    df_concat = pd.concat([df[:day], df1])
     df_concat = df_concat.sort_values(by='Time')
     df_concat.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
     df_concat.to_csv(f"data/weather/forecast_data.csv", index=False)

@@ -1,6 +1,7 @@
 import sys
 import os
 from config import *
+from data_fetching import *
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
@@ -19,7 +20,7 @@ from keras.layers import *
 from keras.callbacks import ModelCheckpoint
 from keras.losses import MeanSquaredError
 from keras.metrics import RootMeanSquaredError
-from keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
 
 
@@ -45,10 +46,9 @@ def reverse_normalize(df:pd.DataFrame, col_name:str, a:int=0, b:int=1):
     a = pd.read_csv(processed_data_dir + "merged.csv")
     x_min = a[col_name].min()
     x_max = a[col_name].max()
-    print("xmin: ", x_min)
-    print("xmax: ", x_max)
-    for col_name in df.columns:
-      df[col_name] = df[col_name]*(x_max-x_min) + x_min
+    # print("xmin: ", x_min)
+    # print("xmax: ", x_max)
+    df[col_name] = df[col_name]*(x_max-x_min) + x_min
     return df
   
 def train_model(df:pd.DataFrame, model_name:str = "lstm_model_v1", look_back:int=24, num_of_epochs:int=20, pred_col_name:str="PV power"):
@@ -165,8 +165,47 @@ def convert_model_to_tflite(model_dir:str, model_name:str):
   with open(model_dir + model_name, 'wb') as f:
     f.write(tflite_model)
     
+def predict_next_hour(df:pd.DataFrame, model, look_back=24, pred_col_name="PV power"):
+  y_index = df.columns.get_loc(pred_col_name)
+  df_as_np = df.to_numpy()
+  X = []
+  y = []
+  i = len(df_as_np)-look_back
+  row = [r for r in df_as_np[i:i+look_back]]
+  X.append(row)
+  label = df_as_np[i+look_back-1][y_index]
+  y.append(label)
+  X = np.array(X)
+  y = np.array(y)
+  pred = model.predict(X).flatten()
+  return pred
+
+def add_day_sin_cos_and_normalize(df:pd.DataFrame):
+  df.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M')
+  df['Seconds'] = df.index.map(pd.Timestamp.timestamp)
+  day = 60*60*24
+  df['Day sin']  = np.sin(df['Seconds'] * (2 * np.pi / day))
+  df['Day cos']  = np.cos(df['Seconds'] * (2 * np.pi / day))
+  df = df.drop('Seconds', axis=1)
+  df = df.drop("Time", axis=1)
+  for i in range (0,len(df.columns)):
+      df = normalize_column(df, i)
+  return df
+
+def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV power"):
+  t = df["Time"].iloc[-1]
+  df_pv = df.drop(columns=["Wind speed", "Wind power", "Time"])
+  df_future = pd.read_csv("data/weather/future.csv")
+  df_future = df_future.loc[df_future["Time"] >= t]
+  
+  pv_future = df_future.drop(columns=["Wind speed", "Wind power"])
+  pv_future_norm = add_day_sin_cos_and_normalize(pv_future)
+  
+  for i in range(0, len(pv_future_norm)):
+    pv_future_norm[pred_col_name][i] = predict_next_hour(df_pv, model, look_back, pred_col_name)
+    df_pv = df_pv.append(pv_future_norm.iloc[i])
     
-
-
-
-
+  df_predicted = reverse_normalize(pv_future_norm, pred_col_name)
+  pv_future[pred_col_name] = df_predicted[pred_col_name]
+  pv_future = pv_future.drop(columns=["Seconds","Day sin","Day cos"])
+  pv_future.to_csv("data/predictions/predicted.csv", index=False)

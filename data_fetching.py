@@ -37,19 +37,20 @@ def generate_url(_seconds):
     return f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={_seconds}&appid={api_key}&units=metric"
 
 def get_today_weather():
+    update_global_variables()
     df = weather_api_call(today_url)
-    df.to_csv(f"data/weather/today_weather.csv", index=False)
+    df.to_csv(f"data/weather/present.csv", index=False)
 
 def get_forecasting_data():
     day = 24 #hours
     df = weather_api_call(two_day_forecast_url)
-    df1 = pd.read_csv("data/weather/forecast_data.csv")
-    df_concat = pd.concat([df[:day], df1])
+    df1 = pd.read_csv("data/weather/future.csv")
+    df_concat = pd.concat([df[:day+2], df1])
     df_concat = df_concat.sort_values(by='Time')
     df_concat.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
-    df_concat.to_csv(f"data/weather/forecast_data.csv", index=False)
+    df_concat.to_csv(f"data/weather/future.csv", index=False)
 
-def get_historical_5days_data():
+def get_historical_data():
     days = []
     seconds = int(datetime.today().timestamp())
     for i in range(1,6):
@@ -60,7 +61,7 @@ def get_historical_5days_data():
     df_concat = pd.concat(df_list)
     df_concat = df_concat.sort_values(by='Time')
     df_concat.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
-    df = pd.read_csv("data/weather/historical_data.csv")
+    df = pd.read_csv("data/weather/past.csv")
     df = pd.concat([df, df_concat])
     df.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
     df = df.sort_values(by='Time')
@@ -68,7 +69,7 @@ def get_historical_5days_data():
     now = datetime.fromtimestamp(seconds).strftime("%d-%m-%Y %H:%M")
     mask = (df['Time'] < now) 
     df = df.loc[mask]
-    df.to_csv(f"data/weather/historical_data.csv", index=False)
+    df.to_csv(f"data/weather/past.csv", index=False)
 
 def normalize_column(df_forecast:pd.DataFrame, col:int = 1, a:int=0, b:int=1):
     df = pd.read_csv(processed_data_dir + "merged.csv")
@@ -108,28 +109,38 @@ def weather_api_call(url):
     df = pd.DataFrame(data={"Time":time, "Temperature":temperature, "PV power":power, "Solar radiation":uvi, "Wind power":power, "Wind speed":wind})
     return df
 
+def update_data():
+    get_historical_data()
+    get_forecasting_data()
+    get_today_weather()
 
+def make_forecasting_data():
+    update_data()
+    df_past = pd.read_csv("data/weather/past.csv")
+    df_present = pd.read_csv("data/weather/present.csv")
+    df_future = pd.read_csv("data/weather/future.csv")
+    df_past_present = pd.concat([df_past, df_present])
+    x = len(df_past_present)
+    df = df_past_present[x-24:]
+    df_pv = pd.read_csv("data/raw/PV_power_gen_2703.csv")
+    df_wp = pd.read_csv("data/raw/wind_power_gen_2703.csv")
+    df_pv.rename(columns = {'Photovoltaic':'PV power'}, inplace = True)
+    df_wp.rename(columns = {'Wind':'Wind power'}, inplace = True)
+    df = df.drop('PV power', axis=1)
+    df = df.drop('Wind power', axis=1)
+    df = df.merge(df_pv,on="Time", how="left")
+    df = df.merge(df_wp,on="Time", how="left")
+    df.to_csv("data/processed/preprocessed.csv", index=False)
 
-# df_yesterday = weather_api_call(yesterday_url)
-# df_today = weather_api_call(today_url)
-# df_two_day_forecast = weather_api_call(two_day_forecast_url)
-
-# conc_df = concatenate_dataframes(df_yesterday, df_today, df_two_day_forecast)
-# conc_df.to_csv("data/processed/forecast_data.csv", index=False)
-
-# for i in range (1, len(conc_df.columns)):
-#         conc_df = normalize_column(conc_df, i)
-
-# conc_df.to_csv("data/processed/forecast_data_normalized.csv", index=False)
-
-get_historical_5days_data()
-get_forecasting_data()
-
-get_today_weather()
-
-
-
-
+    df.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M')
+    df['Seconds'] = df.index.map(pd.Timestamp.timestamp)
+    day = 60*60*24
+    df['Day sin']  = np.sin(df['Seconds'] * (2 * np.pi / day))
+    df['Day cos']  = np.cos(df['Seconds'] * (2 * np.pi / day))
+    df = df.drop('Seconds', axis=1)
+    for i in range (1,len(df.columns)):
+        df = normalize_column(df, i)
+    df.to_csv("data/processed/norm.csv", index=False)
 
 
 

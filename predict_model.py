@@ -27,9 +27,17 @@ x1 = past["Time"].str[0:2] +"-"+ past["Time"].str[-5:-3]
 x2 = predictions["Time"].str[0:2] +"-"+ predictions["Time"].str[-5:-3]
 plt.plot(x1, y1, label = "past")
 plt.plot(x2, y2, label = "predictions")
+x = x1.append(x2)
+xposition = get_days_change_location(x)
+for xc in xposition:
+    plt.axvline(x=xc, color='k', linestyle='--')
+x_label = []
+for t in x:
+    x_label.append(t[3:5])
+plt.xticks(ticks=x[0::3], labels=x_label[0::3])
 plt.xlabel('Time - Day-Hour')
 plt.ylabel('PV Power')
 plt.title('PV power predictions')
 plt.legend()
+plt.savefig(figures_dir + pred_col_name + 'prediction_30_March.png', format='png')
 plt.show()
-plt.savefig(figures_dir + pred_col_name + 'prediction_test_29_30_March.png', format='png')

@@ -209,3 +209,18 @@ def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV pow
   pv_future[pred_col_name] = df_predicted[pred_col_name]
   pv_future = pv_future.drop(columns=["Seconds","Day sin","Day cos"])
   pv_future.to_csv("data/predictions/predicted.csv", index=False)
+  
+  
+def get_days_change_location(x):
+  xposition = []
+  n = x.iloc[0][:2]
+  location = 0
+  for i in x:
+      if n != i[:2]:
+          print(n)
+          print("location = ", + location)
+          xposition.append(location)
+      n = i[:2]
+      location +=1
+  return xposition
+  

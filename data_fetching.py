@@ -46,9 +46,12 @@ def get_forecasting_data():
     df = weather_api_call(two_day_forecast_url)
     df1 = pd.read_csv("data/weather/future.csv")
     df_concat = pd.concat([df[:day+2], df1])
-    df_concat = df_concat.sort_values(by='Time')
-    df_concat.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
-    df_concat.to_csv(f"data/weather/future.csv", index=False)
+    df_concat.index = pd.to_datetime(df_concat['Time'], format='%d-%m-%Y %H:%M')
+    df_concat['Seconds'] = df_concat.index.map(pd.Timestamp.timestamp)
+    df_concat.drop_duplicates(subset = ['Seconds'], keep = 'first', inplace = True)
+    df_concat = df_concat.sort_values(by='Seconds')
+    df = df_concat.drop('Seconds', axis=1)
+    df.to_csv(f"data/weather/future.csv", index=False)
 
 def get_historical_data():
     days = []

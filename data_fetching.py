@@ -65,13 +65,13 @@ def get_historical_data():
     df_concat = df_concat.sort_values(by='Time')
     df_concat.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
     df = pd.read_csv("data/weather/past.csv")
-    df = pd.concat([df, df_concat])
+    df_concat = pd.concat([df, df_concat])
+    df_concat.index = pd.to_datetime(df_concat['Time'], format='%d-%m-%Y %H:%M')
+    df_concat['Seconds'] = df_concat.index.map(pd.Timestamp.timestamp)
+    df_concat.drop_duplicates(subset = ['Seconds'], keep = 'first', inplace = True)
+    df_concat = df_concat.sort_values(by='Seconds')
+    df = df_concat.drop('Seconds', axis=1)
     df.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
-    df = df.sort_values(by='Time')
-    # seconds = int(datetime.today().timestamp())
-    # now = datetime.fromtimestamp(seconds).strftime("%d-%m-%Y %H:%M")
-    # mask = (df['Time'] < now) 
-    # df = df.loc[mask]
     df.to_csv(f"data/weather/past.csv", index=False)
 
 def normalize_column(df_forecast:pd.DataFrame, col:int = 1, a:int=0, b:int=1):

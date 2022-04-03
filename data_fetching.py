@@ -5,7 +5,7 @@ import requests
 import json
 from config import *
 
-
+# global time variables in seconds to be used for api calls
 day = 60*60*24
 today = date.today()
 seconds = int(datetime.today().timestamp())
@@ -13,6 +13,7 @@ tomorrow = seconds + day;
 yesterday = seconds - day;
 today = datetime.fromtimestamp(seconds).strftime("%d-%m-%Y %H:%M")
 
+# global api variables and url requests
 api_key = "8af40bfbe568da6eecfc0b905b468c42"
 lat = "55.1449" #Bornholm Latitude
 lon = "14.9170" #Bornholm Longitude
@@ -32,15 +33,19 @@ def update_global_variables(): # a function that updates global variables
     today_url     = f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={seconds}&appid={api_key}&units=metric"
     two_day_forecast_url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=alerts&appid={api_key}&units=metric"
 
-
-def generate_url(_seconds):
+# Returns a url string for the specified seconds
+def generate_url(_seconds:int)->str:
     return f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={_seconds}&appid={api_key}&units=metric"
 
+# Collects the actual weather for today until the present hour.
+# saved as data/weather/present.csv
 def get_today_weather():
     update_global_variables()
     df = weather_api_call(today_url)
     df.to_csv(f"data/weather/present.csv", index=False)
 
+# Get the hourly forecasting weather for the next 24 hours
+# saved as data/weather/future.csv
 def get_forecasting_data():
     day = 24 #hours
     df = weather_api_call(two_day_forecast_url)
@@ -53,6 +58,8 @@ def get_forecasting_data():
     df = df_concat.drop('Seconds', axis=1)
     df.to_csv(f"data/weather/future.csv", index=False)
 
+# Get the historical data from the api for the past 5 days
+# save it as data/weather/past.csv
 def get_historical_data():
     days = []
     seconds = int(datetime.today().timestamp())
@@ -74,7 +81,9 @@ def get_historical_data():
     df.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
     df.to_csv(f"data/weather/past.csv", index=False)
 
-def normalize_column(df_forecast:pd.DataFrame, col:int = 1, a:int=0, b:int=1):
+# Normalize dataframe columns data based on the large dataset that we used for training the lstm model
+# Return the normalized dataframe
+def normalize_column(df_forecast:pd.DataFrame, col:int = 1, a:int=0, b:int=1)->pd.DataFrame:
     df = pd.read_csv(processed_data_dir + "merged.csv")
     col_name = df_forecast.columns[col]
     max = df[col_name].max()
@@ -83,15 +92,17 @@ def normalize_column(df_forecast:pd.DataFrame, col:int = 1, a:int=0, b:int=1):
     df_forecast[col_name] = (b-a)*df_forecast[col_name]+a 
     return df_forecast 
 
-def concatenate_dataframes(df1, df2, df3):
+# Concatenate dataframes and remove drop_duplicates
+# Return the concatenated dataframe
+def concatenate_dataframes(df1, df2, df3)->pd.DataFrame:
     frames = [df1, df2, df3] 
     df =  pd.concat(frames) 
     df.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
     df.to_csv('.csv', index=False)
     return df
     
-
-def weather_api_call(url):
+# Make a call to the api and return the dataframe
+def weather_api_call(url:str)->pd.DataFrame:
     response = requests.get(url)
     forecast = json.loads(response.text)
     time = []
@@ -112,11 +123,15 @@ def weather_api_call(url):
     df = pd.DataFrame(data={"Time":time, "Temperature":temperature, "PV power":power, "Solar radiation":uvi, "Wind power":power, "Wind speed":wind})
     return df
 
+# Update data
 def update_data():
     get_historical_data()
     get_forecasting_data()
     get_today_weather()
 
+# Merge the past 24 hours of actual weather data, pv power and wind power generation
+# Save the data as data/processed/preprocessed.csv and data/processed/norm.csv for the normalized dataframe
+# These data will be used for the prediction of the pv and windo power generation for the next 24 hours
 def make_forecasting_data():
     update_data()
     df_past = pd.read_csv("data/weather/past.csv")

@@ -9,13 +9,6 @@ import os
 import sys
 
 
-
-
-
-
-
-
-
 if __name__ == '__main__':
     df = fetch_weather_forecast()
     merge_forecast_with_actual_data()

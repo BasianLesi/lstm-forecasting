@@ -8,11 +8,11 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import pandas as pd
 import numpy as np
 import math
-import click
-import logging
+# import click
+# import logging
 from pathlib import Path
 import matplotlib.pyplot as plt
-from dotenv import find_dotenv, load_dotenv
+# from dotenv import find_dotenv, load_dotenv
 from sklearn.metrics import mean_squared_error as mse
 
 from keras.models import Sequential, save_model, load_model
@@ -59,6 +59,7 @@ def train_model(df:pd.DataFrame, model_name:str = "lstm_model_v1", look_back:int
     X_train1, y_train1 = X[:train_size], y[:train_size]
     X_val1, y_val1 = X[train_size:train_size+val_size], y[train_size:train_size+val_size]
     # X_test1, y_test1 = X[train_size+val_size:], y[train_size+val_size:]
+    global model_dir 
     model_dir = model_dir + model_name
     create_directory_if_missing(model_dir)
 
@@ -74,16 +75,16 @@ def train_model(df:pd.DataFrame, model_name:str = "lstm_model_v1", look_back:int
     plot_model_history(history, model_name)
       
 def create_directory_if_missing(path:str):
-  logger = logging.getLogger("create_directory")
+  print("create_directory")
   exists = os.path.exists(path)
   if not exists:
     try:
       os.makedirs(path)
-      logger.info("directory created successfully: " + path)
+      print("directory created successfully: " + path)
     except:
-      logger.info("Unable to create directory: " + path)
+      print("Unable to create directory: " + path)
   else:
-    logger.info("directory already exists")
+    print("directory already exists")
     
 def plot_model_history(history, model_name:str):
   plt.plot(history.history['loss'], 'g', label='Training loss')

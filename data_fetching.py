@@ -50,7 +50,7 @@ def get_forecasting_data():
     day = 24 #hours
     df = weather_api_call(two_day_forecast_url)
     df1 = pd.read_csv("data/weather/future.csv")
-    df_concat = pd.concat([df[:day+2], df1])
+    df_concat = pd.concat([df[:day+12], df1])
     df_concat.index = pd.to_datetime(df_concat['Time'], format='%d-%m-%Y %H:%M')
     df_concat['Seconds'] = df_concat.index.map(pd.Timestamp.timestamp)
     df_concat.drop_duplicates(subset = ['Seconds'], keep = 'first', inplace = True)
@@ -128,6 +128,7 @@ def update_data():
     get_historical_data()
     get_forecasting_data()
     get_today_weather()
+    print("data updated successfully")
 
 # Merge the past 24 hours of actual weather data, pv power and wind power generation
 # Save the data as data/processed/preprocessed.csv and data/processed/norm.csv for the normalized dataframe
@@ -162,7 +163,7 @@ def make_forecasting_data():
 
 
 
-
+update_data()
 
 
 

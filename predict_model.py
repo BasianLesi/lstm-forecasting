@@ -7,6 +7,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 print(f"ROOT DIR = {ROOT_DIR}")
 data_directory = ROOT_DIR+"/data/raw/"
 
+# df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
+# train_model(df_pv, model_name="pv_model",   num_of_epochs = 20, pred_col_name="PV power")
+
 try:
     df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
     pv_model = load_model(model_dir + "pv_model/")
@@ -16,7 +19,7 @@ except:
     print("unable to load photovoltaic df and model")
     sys.exit(1)
 
-# predict_pv_power(norm, pv_model, look_back=24, pred_col_name="PV power")
+predict_pv_power(norm, pv_model, look_back=24, pred_col_name="PV power")
 
 pred_col_name="PV power"
 past = pd.read_csv(processed_data_dir + "preprocessed.csv")

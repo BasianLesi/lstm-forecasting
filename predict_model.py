@@ -24,12 +24,12 @@ if(len(sys.argv) > 1):
     print("arguments: ", sys.argv)
     if(sys.argv[1] == "h5"):
         print("loading h5 model")
-        json_file = open('model.json', 'r')
+        json_file = open(model_dir + 'model.json', 'r')
         loaded_model_json = json_file.read()
         json_file.close()
         pv_model = model_from_json(loaded_model_json)
         # load weights into new model
-        pv_model.load_weights("model.h5")
+        pv_model.load_weights(model_dir + "model.h5")
         
 
 predict_pv_power(norm, pv_model, look_back=24, pred_col_name="PV power")

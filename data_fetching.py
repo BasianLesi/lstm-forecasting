@@ -21,7 +21,8 @@ yesterday_url = f"https://api.openweathermap.org/data/2.5/onecall/timemachine?la
 today_url     = f"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={lat}&lon={lon}&dt={seconds}&appid={api_key}&units=metric"
 two_day_forecast_url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=alerts&appid={api_key}&units=metric"
 
-def update_global_variables(): # a function that updates global variables
+# Update global variables
+def update_global_variables(): 
     global today, seconds, tomorrow,yesterday, today_url, yesterday_url, two_day_forecast_url
     today = date.today()
     seconds = int(datetime.today().timestamp())

@@ -11,6 +11,11 @@ data_directory = ROOT_DIR+"/data/raw/"
 # df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
 # train_model(df_pv, model_name="pv_model",   num_of_epochs = 20, pred_col_name="PV power")
 
+def make_prediction():
+    ##TODO: create a function that predicts data
+    raise NotImplementedError()
+
+
 try:
     df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
     pv_model = load_model(model_dir + "pv_model/")
@@ -57,3 +62,4 @@ plt.title('PV power predictions')
 plt.legend()
 plt.savefig(figures_dir + pred_col_name + 'prediction_30_March.png', format='png')
 plt.show()
+

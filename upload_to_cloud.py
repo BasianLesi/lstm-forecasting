@@ -14,7 +14,7 @@ def update_spreadsheet(hours:int=24):
     client = gspread.authorize(creds)
     sheet = client.open("future").sheet1 
 
-    df = pd.read_csv('predicted.csv')
+    df = pd.read_csv(prediction_dir + 'predicted.csv')
     for i in range(len(df)-1, len(df)-hours-1, -1):
         insertRow = df.iloc[i].values.flatten().tolist()
         for s in range(1, len(insertRow)):
@@ -24,7 +24,7 @@ def update_spreadsheet(hours:int=24):
     pass        
     sheet.delete_rows(26, 26+hours)
 
-update_spreadsheet()
+# update_spreadsheet()
 
 
          

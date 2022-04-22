@@ -48,10 +48,10 @@ def get_today_weather():
 # Get the hourly forecasting weather for the next 24 hours
 # saved as data/weather/future.csv
 def get_forecasting_data():
-    day = 24 #hours
+    day = 48 #hours
     df = weather_api_call(two_day_forecast_url)
     df1 = pd.read_csv("data/weather/future.csv")
-    df_concat = pd.concat([df[:day+12], df1])
+    df_concat = pd.concat([df[:day], df1])
     df_concat.index = pd.to_datetime(df_concat['Time'], format='%d-%m-%Y %H:%M')
     df_concat['Seconds'] = df_concat.index.map(pd.Timestamp.timestamp)
     df_concat.drop_duplicates(subset = ['Seconds'], keep = 'first', inplace = True)

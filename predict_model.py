@@ -18,7 +18,7 @@ def make_prediction():
 
 try:
     df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
-    pv_model = load_model(model_dir + "pv_model/")
+    wp_model = load_model(model_dir + "wp_model/")
     # pv_forecast = pd.read_csv(processed_data_dir + "PV_predict_data.csv")
     norm = pd.read_csv(processed_data_dir + "norm.csv")
 except:
@@ -38,6 +38,7 @@ if(len(sys.argv) > 1):
         
 
 predict_pv_power(norm, pv_model, look_back=24, pred_col_name="PV power")
+predict_wp_power(norm, wp_model, look_back=24, pred_col_name="PV power")
 
 pred_col_name="PV power"
 past = pd.read_csv(processed_data_dir + "preprocessed.csv")

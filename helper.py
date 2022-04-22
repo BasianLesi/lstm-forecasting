@@ -209,7 +209,25 @@ def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV pow
   df_predicted = reverse_normalize(pv_future_norm, pred_col_name)
   pv_future[pred_col_name] = df_predicted[pred_col_name]
   pv_future = pv_future.drop(columns=["Seconds","Day sin","Day cos"])
-  pv_future.to_csv("data/predictions/predicted.csv", index=False)
+  pv_future.to_csv("data/predictions/pv_predicted.csv", index=False)
+  
+def predict_wp_power(df:pd.DataFrame, model, look_back=24, pred_col_name="Wind power"):
+  t = df["Time"].iloc[-1]
+  df_wp = df.drop(columns=["PV power","Solar radiation", "Time"])
+  df_future = pd.read_csv("data/weather/future.csv")
+  df_future = df_future.loc[df_future["Time"] >= t]
+  
+  wp_future = df_future.drop(columns=["Wind speed", "Wind power"])
+  wp_future_norm = add_day_sin_cos_and_normalize(wp_future)
+  
+  for i in range(0, len(wp_future_norm)):
+    wp_future_norm[pred_col_name][i] = predict_next_hour(df_wp, model, look_back, pred_col_name)
+    df_wp = df_wp.append(wp_future_norm.iloc[i])
+    
+  df_predicted = reverse_normalize(wp_future_norm, pred_col_name)
+  wp_future[pred_col_name] = df_predicted[pred_col_name]
+  wp_future = wp_future.drop(columns=["Seconds","Day sin","Day cos"])
+  wp_future.to_csv("data/predictions/wp_predicted.csv", index=False)
   
 
 

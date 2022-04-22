@@ -13,10 +13,10 @@ if __name__ == '__main__':
 
     while True:
         update_data()
-        make_forecasting_data()
+        # make_forecasting_data()
         ##TODO: make prediction data
         # make_prediciton()
-        update_spreadsheet()
+        # update_spreadsheet()
         time.sleep(3600.0 - ((time.time() - starttime) % 3600.0))   # sleep for the remainder of an hour
            
     

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from helper import *
 from keras.models import model_from_json
+from keras.models import load_model
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -15,10 +16,21 @@ def make_prediction():
     ##TODO: create a function that predicts data
     raise NotImplementedError()
 
-
+def load_model_from_json(model_name:str="model")->tf.keras.Model:
+    json_file = open(model_dir + model_name + '.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = model_from_json(loaded_model_json)
+    # load weights into new model
+    model.load_weights(model_dir + model_name + ".h5")
+    return model
+    
 try:
     df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
-    wp_model = load_model(model_dir + "wp_model/")
+    pv_model = load_model_from_json("pv_model")
+    wp_model = load_model_from_json("wp_model")
+    # wp_model = load_model(model_dir + "wp_model/")
+    # pv_model = load_model(model_dir + "model.h5")
     # pv_forecast = pd.read_csv(processed_data_dir + "PV_predict_data.csv")
     norm = pd.read_csv(processed_data_dir + "norm.csv")
 except:
@@ -29,16 +41,12 @@ if(len(sys.argv) > 1):
     print("arguments: ", sys.argv)
     if(sys.argv[1] == "h5"):
         print("loading h5 model")
-        json_file = open(model_dir + 'model.json', 'r')
-        loaded_model_json = json_file.read()
-        json_file.close()
-        pv_model = model_from_json(loaded_model_json)
-        # load weights into new model
-        pv_model.load_weights(model_dir + "model.h5")
+        pv_model = load_model_from_json("pv_model")
+        wp_model = load_model_from_json("wp_model")
         
 
 predict_pv_power(norm, pv_model, look_back=24, pred_col_name="PV power")
-predict_wp_power(norm, wp_model, look_back=24, pred_col_name="PV power")
+# predict_wp_power(norm, wp_model, look_back=24, pred_col_name="WP power")
 
 pred_col_name="PV power"
 past = pd.read_csv(processed_data_dir + "preprocessed.csv")

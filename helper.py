@@ -46,8 +46,8 @@ def reverse_normalize(df:pd.DataFrame, col_name:str, a:int=0, b:int=1):
     a = pd.read_csv(processed_data_dir + "merged.csv")
     x_min = a[col_name].min()
     x_max = a[col_name].max()
-    # print("xmin: ", x_min)
-    # print("xmax: ", x_max)
+    # log("xmin: ", x_min)
+    # log("xmax: ", x_max)
     df[col_name] = df[col_name]*(x_max-x_min) + x_min
     return df
   
@@ -75,16 +75,16 @@ def train_model(df:pd.DataFrame, model_name:str = "lstm_model_v1", look_back:int
     plot_model_history(history, model_name)
       
 def create_directory_if_missing(path:str):
-  print("create_directory")
+  log("create_directory")
   exists = os.path.exists(path)
   if not exists:
     try:
       os.makedirs(path)
-      print("directory created successfully: " + path)
+      log("directory created successfully: " + path)
     except:
-      print("Unable to create directory: " + path)
+      log("Unable to create directory: " + path)
   else:
-    print("directory already exists")
+    log("directory already exists")
     
 def plot_model_history(history, model_name:str):
   plt.plot(history.history['loss'], 'g', label='Training loss')
@@ -137,7 +137,7 @@ def predict(df:pd.DataFrame, model, pred_col_name:str):
   df_pred = reverse_normalize(df_pred, pred_col_name)
   plot_predictions(df_pred, pred_col_name)
   # df.to_csv(df_pred, pred_col_name + "_pred_2203.csv")
-  # print("mse = " + str(mse(y, predictions)))
+  # log("mse = " + str(mse(y, predictions)))
   
 def forecast(df:pd.DataFrame, model, pred_col_name:str, look_back:int=24):
   df_as_np = df.to_numpy()

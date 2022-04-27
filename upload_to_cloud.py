@@ -12,7 +12,11 @@ def update_spreadsheet(hours:int=24):
     ]  
     creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)  
     client = gspread.authorize(creds)
-    sheet = client.open("future").sheet1 
+    try:
+        sheet = client.open("future").sheet1 
+    except:
+        log("unable to open google sheet")
+        exit(1)
 
     df = pd.read_csv(prediction_dir + 'predicted.csv')
     for i in range(len(df)-1, len(df)-hours-1, -1):
@@ -23,6 +27,7 @@ def update_spreadsheet(hours:int=24):
         sheet.insert_row(insertRow, 2)
     pass        
     sheet.delete_rows(26, 26+hours)
+    log("updated google sheet")
 
 # update_spreadsheet()
 

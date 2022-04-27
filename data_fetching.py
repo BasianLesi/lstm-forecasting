@@ -129,7 +129,7 @@ def update_data():
     get_historical_data()
     get_forecasting_data()
     get_today_weather()
-    print("data updated successfully")
+    log("data updated successfully")
 
 # Merge the past 24 hours of actual weather data, pv power and wind power generation
 # Save the data as data/processed/preprocessed.csv and data/processed/norm.csv for the normalized dataframe

@@ -20,29 +20,40 @@ def load_model_from_json(model_name:str="model")->tf.keras.Model:
     json_file = open(model_dir + model_name + '.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
+    log(f"Loaded model from {model_dir + model_name + '.json'}")
+    # load json and create model
     model = model_from_json(loaded_model_json)
-    # load weights into new model
+    # load weights into model
     model.load_weights(model_dir + model_name + ".h5")
+    log(f"Loaded weights from {model_dir + model_name + '.h5'}")
     return model
     
+
+    
 try:
-    df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
+    norm = pd.read_csv(processed_data_dir + "norm.csv")
+    log("norm loaded")
+except:
+    log("Unable to load data")
+    sys.exit(1)
+    
+try:
     pv_model = load_model_from_json("pv_model")
     wp_model = load_model_from_json("wp_model")
+    log("models loaded")
     # wp_model = load_model(model_dir + "wp_model/")
     # pv_model = load_model(model_dir + "model.h5")
     # pv_forecast = pd.read_csv(processed_data_dir + "PV_predict_data.csv")
-    norm = pd.read_csv(processed_data_dir + "norm.csv")
 except:
-    print("unable to load photovoltaic df and model")
+    log("unable to load models")
     sys.exit(1)
 
-if(len(sys.argv) > 1):
-    print("arguments: ", sys.argv)
-    if(sys.argv[1] == "h5"):
-        print("loading h5 model")
-        pv_model = load_model_from_json("pv_model")
-        wp_model = load_model_from_json("wp_model")
+# if(len(sys.argv) > 1):
+#     print("arguments: ", sys.argv)
+#     if(sys.argv[1] == "h5"):
+#         print("loading h5 model")
+#         pv_model = load_model_from_json("pv_model")
+#         wp_model = load_model_from_json("wp_model")
         
 
 predict_pv_power(norm, pv_model, look_back=24, pred_col_name="PV power")
@@ -70,5 +81,5 @@ plt.ylabel('PV Power')
 plt.title('PV power predictions')
 plt.legend()
 plt.savefig(figures_dir + pred_col_name + 'prediction_30_March.png', format='png')
-plt.show()
+if DEBUG: plt.show()
 

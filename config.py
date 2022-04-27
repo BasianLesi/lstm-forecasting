@@ -10,6 +10,13 @@ model_dir = ROOT_DIR+"/models/"
 figures_dir = ROOT_DIR+"/reports/figures/"
 prediction_dir = ROOT_DIR+"/data/predictions/"
 
+DEBUG = True
+
+def log(s):
+    if DEBUG:
+        print(s)
+
+
 
 
 

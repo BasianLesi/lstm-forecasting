@@ -7,11 +7,11 @@ from config import *
 
 # global time variables in seconds to be used for api calls
 ##TODO: Update system time before script runnning!!
-day = 60*60*24
-today = date.today()
-seconds = int(datetime.today().timestamp())
-tomorrow = seconds + day;
-yesterday = seconds - day;
+day = 60*60*24  
+today = date.today()  
+seconds = int(datetime.today().timestamp()) 
+tomorrow = seconds + day;   
+yesterday = seconds - day;  
 today = datetime.fromtimestamp(seconds).strftime("%d-%m-%Y %H:%M")
 
 # global api variables and url requests
@@ -63,25 +63,25 @@ def get_forecasting_data():
 # Get the historical data from the api for the past 5 days
 # save it as data/weather/past.csv
 def get_historical_data():
-    days = []
-    seconds = int(datetime.today().timestamp())
-    for i in range(1,6):
-        days.append(seconds-i*day)
-    df_list = []
-    for sec in days:
-        df_list.append(weather_api_call(generate_url(sec)))   
-    df_concat = pd.concat(df_list)
-    df_concat = df_concat.sort_values(by='Time')
+    days = []   # List of days
+    seconds = int(datetime.today().timestamp()) # Current seconds
+    for i in range(1,6):    # Get the past 5 days
+        days.append(seconds-i*day)  # Add the seconds to the list
+    df_list = []    # List of dataframes
+    for sec in days:    # For each day
+        df_list.append(weather_api_call(generate_url(sec)))     # Get the dataframe for that day
+    df_concat = pd.concat(df_list)  # Concatenate the dataframes
+    df_concat = df_concat.sort_values(by='Time')    # Sort the dataframe by time
     df_concat.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
-    df = pd.read_csv("data/weather/past.csv")
-    df_concat = pd.concat([df, df_concat])
-    df_concat.index = pd.to_datetime(df_concat['Time'], format='%d-%m-%Y %H:%M')
-    df_concat['Seconds'] = df_concat.index.map(pd.Timestamp.timestamp)
-    df_concat.drop_duplicates(subset = ['Seconds'], keep = 'first', inplace = True)
+    df = pd.read_csv("data/weather/past.csv")   # Read the past dataframe
+    df_concat = pd.concat([df, df_concat])  # Concatenate the dataframes
+    df_concat.index = pd.to_datetime(df_concat['Time'], format='%d-%m-%Y %H:%M')    # Set the index to time
+    df_concat['Seconds'] = df_concat.index.map(pd.Timestamp.timestamp)  # Set the seconds column
+    df_concat.drop_duplicates(subset = ['Seconds'], keep = 'first', inplace = True) # Remove duplicates
     df_concat = df_concat.sort_values(by='Seconds') # Sort by seconds
-    df = df_concat.drop('Seconds', axis=1)
+    df = df_concat.drop('Seconds', axis=1)  # Drop the seconds column
     df.drop_duplicates(subset = ['Time'], keep = 'first', inplace = True) # Remove duplicates
-    df.to_csv(f"data/weather/past.csv", index=False)
+    df.to_csv(f"data/weather/past.csv", index=False)    # Save the dataframe
 
 # Normalize dataframe columns data based on the large dataset that we used for training the lstm model
 # Return the normalized dataframe
@@ -109,9 +109,9 @@ def weather_api_call(url:str)->pd.DataFrame:
     forecast = json.loads(response.text)    # Convert the response to json
     time = []   # Create a list to store the time
     temperature = []    # Create a list to store the temperature
-    uvi = []    # Create a list to store the uvi
-    wind = []   # Create a list to store the wind
-    power = []  # Create a list to store the power
+    uvi = []    # Create a list to store uv index
+    wind = []   # Create a list to store wind
+    power = []  # Create a list to store power
 
     for i in range(0, len(forecast["hourly"])):   # Loop through the json response
         ts = forecast["hourly"][i]["dt"]    # Get the time
@@ -179,6 +179,7 @@ def preprocess_test_data():
     df.index = pd.to_datetime(df['timestamp'], format='%d-%m-%Y %H:%M') # Convert timestamp to datetime
     df['Seconds'] = df.index.map(pd.Timestamp.timestamp)         # Convert datetime to seconds
     df.rename(columns = {'timestamp':'Time'}, inplace = True)   # rename the column
+    df["freq"] = 1                                            # Add a frequency column
     df = df.sort_values(by='Seconds')   # Sort by seconds
     df = df.groupby(['Time']).sum()     # Sum the values for each timestamp     
     df.reset_index(inplace=True)        # Reset the index
@@ -187,11 +188,12 @@ def preprocess_test_data():
     df['Time'] = df['Time'].dt.strftime('%d-%m-%Y %H:%M')   # Convert to string
     
     df = df.drop('Seconds', axis=1) # Drop the seconds column
+    df["Power"] = df["Measurement"]/df["freq"]
     df.to_csv(processed_data_dir + "bornholm_data.csv", index=False)     # Save the dataframe
     
     
 
-preprocess_test_data()
+# preprocess_test_data()
 update_data()
 
 

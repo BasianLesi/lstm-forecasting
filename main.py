@@ -6,6 +6,8 @@ import numpy as np
 
 import time
 
+minutes = 60
+seconds = 60*minutes
 
 # data is updated every hour
 if __name__ == '__main__':

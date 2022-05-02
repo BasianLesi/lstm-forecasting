@@ -29,7 +29,7 @@ def update_spreadsheet(hours:int=24):
     sheet.delete_rows(26, 26+hours)
     log("updated google sheet")
 
-# update_spreadsheet()
+update_spreadsheet()
 
 
          

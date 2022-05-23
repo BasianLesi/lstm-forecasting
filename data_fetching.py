@@ -191,10 +191,43 @@ def preprocess_test_data():
     df["Power"] = df["Measurement"]/df["freq"]
     df.to_csv(processed_data_dir + "bornholm_data.csv", index=False)     # Save the dataframe
     
-    
+def seconds_to_datetime(df:pd.DataFrame, col_name:str="Time")->pd.DataFrame:
+    df['col_name'] = df['col_name'].apply(lambda x: datetime.fromtimestamp(x).strftime("%d-%m-%Y %H:00"))
+    return df
+
+def make_predictions_data():
+    update_data()
+    df_past = pd.read_csv("data/weather/past.csv")
+    df_present = pd.read_csv("data/weather/present.csv")
+    df_future = pd.read_csv("data/weather/future.csv")
+    df_past_present = pd.concat([df_past, df_present])
+    x = len(df_past_present)
+    df = df_past_present[x-24:]
+    # df_pv = pd.read_csv("data/raw/PV_power_gen_2703.csv")
+    # df_wp = pd.read_csv("data/raw/wind_power_gen_2703.csv")
+    # df_pv.rename(columns = {'Photovoltaic':'PV power'}, inplace = True)
+    # df_wp.rename(columns = {'Wind':'Wind power'}, inplace = True)
+    # df = df.drop('PV power', axis=1)
+    # df = df.drop('Wind power', axis=1)
+    # df = df.merge(df_pv,on="Time", how="left")
+    # df = df.merge(df_wp,on="Time", how="left")
+    df.to_csv("data/processed/preprocessed.csv", index=False)
+
+    df.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M')
+    df['Seconds'] = df.index.map(pd.Timestamp.timestamp)
+    day = 60*60*24
+    df['Day sin']  = np.sin(df['Seconds'] * (2 * np.pi / day))
+    df['Day cos']  = np.cos(df['Seconds'] * (2 * np.pi / day))
+    df = df.drop('Seconds', axis=1)
+    for i in range (1,len(df.columns)):
+        df = normalize_column(df, i)
+    df.to_csv("data/processed/make_predictions.csv", index=False)
+
+
 
 # preprocess_test_data()
-update_data()
+# update_data()
+# make_predictions_data()
 
 
 

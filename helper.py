@@ -199,23 +199,41 @@ def add_day_sin_cos_and_normalize(df:pd.DataFrame):
   return df   # return the normalized dataframe
 
 # predictions for the PV power
+def keep_only_next_24_hours_data(df, seconds):
+    df.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M')
+    df['Seconds'] = df.index.map(pd.Timestamp.timestamp)
+    df= df.loc[df["Seconds"] >= seconds]
+    df = df.sort_values(by='Seconds')
+    df = df.drop('Seconds', axis=1)
+    return df
+
 def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV power"):
-  t = df["Time"].iloc[-1] # get the last time
-  df_pv = df.drop(columns=["Wind speed", "Wind power", "Time"]) # get the dataframe without the wind speed, wind power and time columns
-  df_future = pd.read_csv("data/weather/future.csv")  # get the future dataframe
-  df_future = df_future.loc[df_future["Time"] >= t] # get the future dataframe after the last time
+  df_pv = df.drop(columns=["Wind speed", "Wind power", "Time"])
+  df_future = pd.read_csv("data/weather/future.csv")
+  # df_future = df_future.loc[df_future["Time"] >= t]
+  df_future = keep_only_next_24_hours_data(df_future, seconds)
   
-  pv_future = df_future.drop(columns=["Wind speed", "Wind power"])  # get the future dataframe without the wind speed and wind power columns
-  pv_future_norm = add_day_sin_cos_and_normalize(pv_future) # normalize the future dataframe
+  pv_future = df_future.drop(columns=["Wind speed", "Wind power"])
+  pv_future_norm = add_day_sin_cos_and_normalize(pv_future)
   
-  for i in range(0, len(pv_future_norm)): # iterate over the future dataframe
-    pv_future_norm[pred_col_name][i] = predict_next_hour(df_pv, model, look_back, pred_col_name)  # make next hour predictions and append it to the dataframe
-    df_pv = df_pv.append(pv_future_norm.iloc[i])  # add the prediction to the dataframe
+  try: 
+    for i in range(0, len(pv_future_norm)):
+      pv_future_norm[pred_col_name][i] = predict_next_hour(df_pv, model, look_back, pred_col_name)
+      df_pv = df_pv.append(pv_future_norm.iloc[i])
+  except:
+    print("PV power prediction process failed")
     
-  df_predicted = reverse_normalize(pv_future_norm, pred_col_name) # reverse the normalization
-  pv_future[pred_col_name] = df_predicted[pred_col_name]    # add the prediction to the future dataframe
-  pv_future = pv_future.drop(columns=["Seconds","Day sin","Day cos"]) # remove the seconds, day sin and day cos columns
-  pv_future.to_csv("data/predictions/pv_predicted.csv", index=False)  # save the future dataframe
+  df_predicted = reverse_normalize(pv_future_norm, pred_col_name)
+  pv_future[pred_col_name] = df_predicted[pred_col_name]
+  pv_future = pv_future.drop(columns=["Seconds","Day sin","Day cos"])
+  
+  try:
+    pv_future.to_csv("data/predictions/predicted.csv", index=False)
+    print("Predicted data saved to ./data/predictions/predicted.csv")
+    pv_future.to_csv(f"data/predictions/pv_predicted_{today[:-6]}.csv", index=False)
+  except:
+    print("Failed to save predicted data")
+  
 
 # predictions for the Wind power
 def predict_wp_power(df:pd.DataFrame, model, look_back=24, pred_col_name="Wind power"):

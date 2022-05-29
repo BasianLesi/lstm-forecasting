@@ -1,7 +1,7 @@
 ## Install tensorflow on raspberry pi
 
 raspberry os debian buster: https://downloads.raspberrypi.org/raspios_lite_armhf/images/ \
-python 3.7.3
+python 3.7.3\
 Tensorflow - 2.4.0: https://github.com/lhelontra/tensorflow-on-arm/releases
 
 #### install prerequisites

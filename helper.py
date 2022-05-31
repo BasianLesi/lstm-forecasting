@@ -173,14 +173,22 @@ def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV pow
   pv_future = df_future.drop(columns=["Wind speed", "Wind power"])
   pv_future_norm = add_day_sin_cos_and_normalize(pv_future)
   
-  for i in range(0, len(pv_future_norm)):
-    pv_future_norm[pred_col_name][i] = predict_next_hour(df_pv, model, look_back, pred_col_name)
-    df_pv = df_pv.append(pv_future_norm.iloc[i])
+  try: 
+    for i in range(0, len(pv_future_norm)):
+      pv_future_norm[pred_col_name][i] = predict_next_hour(df_pv, model, look_back, pred_col_name)
+      df_pv = df_pv.append(pv_future_norm.iloc[i])
+  except:
+    print("PV power prediction process failed")
     
   df_predicted = reverse_normalize(pv_future_norm, pred_col_name)
   pv_future[pred_col_name] = df_predicted[pred_col_name]
   pv_future = pv_future.drop(columns=["Seconds","Day sin","Day cos"])
-  pv_future.to_csv("data/predictions/predicted.csv", index=False)
+  
+  try:
+    pv_future.to_csv("data/predictions/predicted.csv", index=False)
+    print("Predicted data saved to ./data/predictions/predicted.csv")
+  except:
+    print("Failed to save predicted data")
 
   
 def get_days_change_location(x):

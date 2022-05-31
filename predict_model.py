@@ -26,20 +26,19 @@ def load_model_from_json(model_name:str="model"):   # load model from json file
 
 def forecast_PV_power():
     print(f"ROOT DIR = {ROOT_DIR}")
-    data_directory = ROOT_DIR+"/data/raw/"
 
     try:
         df_predict = pd.read_csv(processed_data_dir + "make_predictions.csv")
         log("norm loaded")
     except:
-        log("Unable to load data")
+        log(f"Unable to load {processed_data_dir}/make_predictions.csv")
         sys.exit(1)
 
     try:
         pv_model = load_model_from_json("pv_model")
-        log("models loaded")
+        log(f"pv_model loaded")
     except:
-        log("unable to load models")
+        log("unable to load pv_model")
         sys.exit(1)
 
     # json_file = open('model.json', 'r')

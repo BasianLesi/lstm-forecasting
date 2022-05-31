@@ -3,3 +3,4 @@ overleaf_fig/
 data/
 creds.json
 openWeatherplt.ipynb
+__pycache__/

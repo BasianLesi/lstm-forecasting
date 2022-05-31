@@ -193,11 +193,20 @@ def add_day_sin_cos_and_normalize(df:pd.DataFrame):
       df = normalize_column(df, i)
   return df
 
+def keep_only_next_24_hours_data(df, seconds):
+    df.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M')
+    df['Seconds'] = df.index.map(pd.Timestamp.timestamp)
+    df= df.loc[df["Seconds"] >= seconds]
+    df = df.sort_values(by='Seconds')
+    df = df.drop('Seconds', axis=1)
+    return df
+
 def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV power"):
   t = df["Time"].iloc[-1]
   df_pv = df.drop(columns=["Wind speed", "Wind power", "Time"])
   df_future = pd.read_csv("data/weather/future.csv")
-  df_future = df_future.loc[df_future["Time"] >= t]
+  # df_future = df_future.loc[df_future["Time"] >= t]
+  df = keep_only_next_24_hours_data(df_future, seconds)
   
   pv_future = df_future.drop(columns=["Wind speed", "Wind power"])
   pv_future_norm = add_day_sin_cos_and_normalize(pv_future)
@@ -210,7 +219,7 @@ def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV pow
   pv_future[pred_col_name] = df_predicted[pred_col_name]
   pv_future = pv_future.drop(columns=["Seconds","Day sin","Day cos"])
   pv_future.to_csv("data/predictions/predicted.csv", index=False)
-  
+
   
 def get_days_change_location(x):
   xposition = []

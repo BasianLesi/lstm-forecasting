@@ -5,7 +5,7 @@ import pandas as pd
 from config import *
 
 
-def update_spreadsheet(hours:int=24):
+def upload_to_google_sheets(hours:int=24):
     scope = [
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive'
@@ -27,9 +27,9 @@ def update_spreadsheet(hours:int=24):
         sheet.insert_row(insertRow, 2)
     pass        
     sheet.delete_rows(26, 26+hours)
-    log("updated google sheet")
+    log("updated google sheet successfully")
 
-update_spreadsheet()
+# upload_to_google_sheets()
 
 
          

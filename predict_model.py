@@ -7,63 +7,24 @@ import subprocess,sys
 
 from helper import *
 from keras.models import model_from_json
+from upload_to_cloud import *
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+def forecast_and_upload_PV_power():
+    print(f"ROOT DIR = {ROOT_DIR}")
+    data_directory = ROOT_DIR+"/data/raw/"
 
-print(f"ROOT DIR = {ROOT_DIR}")
-data_directory = ROOT_DIR+"/data/raw/"
+    df_predict = pd.read_csv(processed_data_dir + "make_predictions.csv")
 
-#df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
-#train_model(df_pv, model_name="pv_model",   num_of_epochs = 5, pred_col_name="PV power")
+    json_file = open('model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    loaded_model.load_weights("model.h5")
 
-# import json
-
-# from keras.models import model_from_json
-
-# with open(model_architecture, 'r') as json_file:
-#     architecture = json.load(json_file)
-#     pv_model = model_from_json(architecture)
-
-df_pv = pd.read_csv(processed_data_dir + 'pv_norm.csv')
-#pv_model = load_model(model_dir + "pv_model/")
-# pv_forecast = pd.read_csv(processed_data_dir + "PV_predict_data.csv")
-norm = pd.read_csv(processed_data_dir + "norm.csv")
-# print("unable to load photovoltaic df and model")
-# sys.exit(1)
-
-# subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy==1.19.2"])
-# import numpy as np
-
-json_file = open('model.json', 'r')
-loaded_model_json = json_file.read()
-json_file.close()
-loaded_model = model_from_json(loaded_model_json)
-# load weights into new model
-loaded_model.load_weights("model.h5")
-
-predict_pv_power(norm, loaded_model, look_back=24, pred_col_name="PV power")
-
-# pred_col_name="PV power"
-# past = pd.read_csv(processed_data_dir + "preprocessed.csv")
-# predictions = pd.read_csv("data/predictions/predicted.csv")
-# y1 = past[pred_col_name]
-# y2 = predictions[pred_col_name]
-# x1 = past["Time"].str[0:2] +"-"+ past["Time"].str[-5:-3]
-# x2 = predictions["Time"].str[0:2] +"-"+ predictions["Time"].str[-5:-3]
-# plt.plot(x1, y1, label = "past")
-# plt.plot(x2, y2, label = "predictions")
-# x = x1.append(x2)
-# xposition = get_days_change_location(x)
-# for xc in xposition:
-#     plt.axvline(x=xc, color='k', linestyle='--')
-# x_label = []
-# for t in x:
-#     x_label.append(t[3:5])
-# plt.xticks(ticks=x[0::3], labels=x_label[0::3])
-# plt.xlabel('Time - Day-Hour')
-# plt.ylabel('PV Power')
-# plt.title('PV power predictions')
-# plt.legend()
-# plt.savefig(figures_dir + pred_col_name + 'prediction_30_March.png', format='png')
-# plt.show()
+    predict_pv_power(df_predict, loaded_model, look_back=24, pred_col_name="PV power")
+    
+    
+    

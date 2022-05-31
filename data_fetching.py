@@ -161,9 +161,38 @@ def make_forecasting_data():
         df = normalize_column(df, i)
     df.to_csv("data/processed/norm.csv", index=False)
 
+##This is a work around since we don't have actual data source from the power plants
+def make_predictions_data():
+    update_data()
+    df_past = pd.read_csv("data/weather/past.csv")
+    df_present = pd.read_csv("data/weather/present.csv")
+    df_future = pd.read_csv("data/weather/future.csv")
+    df_past_present = pd.concat([df_past, df_present])
+    x = len(df_past_present)
+    df = df_past_present[x-24:]
+    # df_pv = pd.read_csv("data/raw/PV_power_gen_2703.csv")
+    # df_wp = pd.read_csv("data/raw/wind_power_gen_2703.csv")
+    # df_pv.rename(columns = {'Photovoltaic':'PV power'}, inplace = True)
+    # df_wp.rename(columns = {'Wind':'Wind power'}, inplace = True)
+    # df = df.drop('PV power', axis=1)
+    # df = df.drop('Wind power', axis=1)
+    # df = df.merge(df_pv,on="Time", how="left")
+    # df = df.merge(df_wp,on="Time", how="left")
+    df.to_csv("data/processed/preprocessed.csv", index=False)
+
+    df.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M')
+    df['Seconds'] = df.index.map(pd.Timestamp.timestamp)
+    day = 60*60*24
+    df['Day sin']  = np.sin(df['Seconds'] * (2 * np.pi / day))
+    df['Day cos']  = np.cos(df['Seconds'] * (2 * np.pi / day))
+    df = df.drop('Seconds', axis=1)
+    for i in range (1,len(df.columns)):
+        df = normalize_column(df, i)
+    df.to_csv("data/processed/make_predictions.csv", index=False)
 
 
-update_data()
+# update_data()
+# make_predictions_data()
 
 
 

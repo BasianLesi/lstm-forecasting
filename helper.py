@@ -84,44 +84,7 @@ def create_directory_if_missing(path:str):
     except:
       print("Unable to create directory: " + path)
   else:
-    print("directory already exists")
-    
-# def plot_model_history(history, model_name:str):
-#   plt.plot(history.history['loss'], 'g', label='Training loss')
-#   plt.plot(history.history['val_loss'], 'b', label='Validation loss')
-#   plt.title('Training and Validation loss')
-#   plt.ylabel('Loss')
-#   plt.xlabel('Epochs')
-#   plt.legend(loc='upper right')
-#   plt.savefig(figures_dir + model_name + '_loss.pdf', format='pdf', bbox_inches='tight')
-#   plt.show()
-  
-#   plt.plot(history.history['root_mean_squared_error'], 'g', label='Training RMSE')
-#   plt.plot(history.history['val_root_mean_squared_error'],'b', label='Validation RMSE')
-#   plt.title('Training and Validation RMSE')
-#   plt.ylabel('RMSE')
-#   plt.xlabel('Epochs')
-#   plt.legend(loc='upper right')
-#   plt.savefig(figures_dir + model_name + '_RMSE.pdf', format='pdf', bbox_inches='tight')
-#   plt.show()
-  
-# def plot_predictions(df_pred:pd.DataFrame, pred_col_name:str, start:int=0, end:int=500):
-#   pred:str = "Predicted_"+pred_col_name
-#   actual:str = "Actual_"+pred_col_name
-#   plt.plot(df_pred[pred][start:end], "-b", label=pred)
-#   plt.plot(df_pred[actual][start:end], "-r", label=actual)
-#   plt.legend(loc="upper right")
-#   plt.savefig(figures_dir + pred_col_name + '_Prediction_vs_Actual.pdf', format='pdf', bbox_inches='tight')
-#   plt.show() 
-  
-# def plot_forecasting(df_pred:pd.DataFrame, pred_col_name:str, start:int=0, end:int=500):
-#   pred:str = "Predicted_"+pred_col_name
-#   actual:str = "Actual_"+pred_col_name
-#   plt.plot(df_pred[pred][start:end], "-b", label=pred)
-#   plt.plot(df_pred[pred][start:end], "-r", label=actual)
-#   plt.legend(loc="upper right")
-#   plt.savefig(figures_dir + pred_col_name + '_forecasting.pdf', format='pdf', bbox_inches='tight')
-#   plt.show()
+    print("directory already exists") 
   
 def predict(df:pd.DataFrame, model, pred_col_name:str): 
   pred:str = "Predicted_"+pred_col_name
@@ -202,11 +165,10 @@ def keep_only_next_24_hours_data(df, seconds):
     return df
 
 def predict_pv_power(df:pd.DataFrame, model, look_back=24, pred_col_name="PV power"):
-  t = df["Time"].iloc[-1]
   df_pv = df.drop(columns=["Wind speed", "Wind power", "Time"])
   df_future = pd.read_csv("data/weather/future.csv")
   # df_future = df_future.loc[df_future["Time"] >= t]
-  df = keep_only_next_24_hours_data(df_future, seconds)
+  df_future = keep_only_next_24_hours_data(df_future, seconds)
   
   pv_future = df_future.drop(columns=["Wind speed", "Wind power"])
   pv_future_norm = add_day_sin_cos_and_normalize(pv_future)

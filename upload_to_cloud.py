@@ -26,7 +26,7 @@ def upload_to_google_sheets(hours:int=24):
         
         sheet.insert_row(insertRow, 2)
     pass        
-    sheet.delete_rows(26, 26+hours)
+    sheet.delete_rows(50, 50+hours)
     log("updated google sheet successfully")
 
 # upload_to_google_sheets()

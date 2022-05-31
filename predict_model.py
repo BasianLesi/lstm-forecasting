@@ -2,7 +2,6 @@
 import h5py
 import pip
 import subprocess,sys
-# subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy==1.20.1"])
 # import numpy as np
 
 from helper import *
@@ -11,7 +10,7 @@ from upload_to_cloud import *
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-def forecast_and_upload_PV_power():
+def forecast_PV_power():
     print(f"ROOT DIR = {ROOT_DIR}")
     data_directory = ROOT_DIR+"/data/raw/"
 
@@ -27,4 +26,4 @@ def forecast_and_upload_PV_power():
     predict_pv_power(df_predict, loaded_model, look_back=24, pred_col_name="PV power")
     
     
-    
+forecast_PV_power()   

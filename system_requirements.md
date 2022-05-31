@@ -1,7 +1,8 @@
 ## Install tensorflow on raspberry pi
 
-raspberry os: https://downloads.raspberrypi.org/raspios_lite_armhf/images/ \
-python 3.7.3
+raspberry os debian buster: https://downloads.raspberrypi.org/raspios_lite_armhf/images/ \
+python 3.7.3\
+Tensorflow - 2.4.0: https://github.com/lhelontra/tensorflow-on-arm/releases
 
 #### install prerequisites
 ```python
@@ -14,6 +15,7 @@ pip install --upgrade numpy==1.20.1
 sudo nano /home/pi/tensorflow/lib/python3.7/site-packages/tensorflow/python/ops/array_ops.py
 
 https://github.com/tensorflow/models/issues/9706#:~:text=edited-,Hi%20%40aniketbote%20I%20posted%20this%20answer%20in%20Stack%20Overflow%3A%20https,from%20tensorflow.math%20import%20reduce_prod,-%F0%9F%91%8D
+
 
 ##### we change the following:
 ```python

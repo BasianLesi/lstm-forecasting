@@ -8,7 +8,7 @@ raw_data_dir = ROOT_DIR+"/data/raw/"
 processed_data_dir = ROOT_DIR+"/data/processed/"
 model_dir = ROOT_DIR+"/models/"
 figures_dir = ROOT_DIR+"/reports/figures/"
-prediction_dir = ROOT_DIR+"/data/predictions"
+prediction_dir = ROOT_DIR+"/data/predictions/"
 
 DEBUG = True
 

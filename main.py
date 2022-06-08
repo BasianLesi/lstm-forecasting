@@ -1,14 +1,13 @@
 from config import *
 from data_fetching import *
 from upload_to_cloud import *
-import pandas as pd
-import numpy as np 
+from predict_model import *
 
 import time
 
+seconds = 60
 minutes = 60
-seconds = 60*minutes
-
+hour = float(seconds*minutes)
 # data is updated every hour
 if __name__ == '__main__':
     starttime = time.time()
@@ -20,5 +19,5 @@ if __name__ == '__main__':
         forecast_PV_power()
         upload_to_google_sheets()
         log("sleep for an hour")
-        time.sleep(3600.0 - ((time.time() - starttime) % 3600.0))
+        time.sleep(hour- ((time.time() - starttime) % hour))
     

@@ -34,7 +34,9 @@ def forecast_PV_power():
         sys.exit(1)
 
     try:
-        pv_model = load_model_from_json("pv_model")
+        # pv_model = load_model_from_json("pv_model")
+        pv_model = load_model_from_json("pv_model_20_16_gridsearch")
+        # pv_model = load_model_from_json("bayesian_13_batch_size64")
         log(f"pv_model loaded")
     except:
         log("unable to load pv_model")
@@ -50,4 +52,4 @@ def forecast_PV_power():
     predict_pv_power(df_predict, pv_model, look_back=24, pred_col_name="PV power")
     
     
-# forecast_PV_power()   
+forecast_PV_power()   

@@ -4,6 +4,7 @@ from datetime import date,datetime
 import requests
 import json
 from config import *
+from sklearn.metrics import mean_squared_error as mse
 
 # global time variables in seconds to be used for api calls
 ##TODO: Update system time before script runnning!!
@@ -13,6 +14,7 @@ seconds = int(datetime.today().timestamp())
 tomorrow = seconds + day;   
 yesterday = seconds - day;  
 today = datetime.fromtimestamp(seconds).strftime("%d-%m-%Y %H:%M")
+
 
 # global api variables and url requests
 api_key = "8af40bfbe568da6eecfc0b905b468c42"
@@ -115,7 +117,8 @@ def weather_api_call(url:str)->pd.DataFrame:
 
     for i in range(0, len(forecast["hourly"])):   # Loop through the json response
         ts = forecast["hourly"][i]["dt"]    # Get the time
-        date_time = datetime.utcfromtimestamp(ts).strftime('%d-%m-%Y %H:%M')    # Convert the time to a string
+        #date_time = datetime.utcfromtimestamp(ts).strftime('%d-%m-%Y %H:%M')    # Convert the time to a string
+        date_time = datetime.fromtimestamp(ts).strftime("%d-%m-%Y %H:%M")
         time.append(date_time)  # Append the time to the list
         temperature.append(forecast["hourly"][i]["temp"])   # Append the temperature to the list
         uvi.append(forecast["hourly"][i]["uvi"]*100)    # Append the uvi to the list
@@ -223,11 +226,44 @@ def make_predictions_data():
         df = normalize_column(df, i)
     df.to_csv("data/processed/make_predictions.csv", index=False)
 
+#format data scraping form bornhold powerlab
+#convert seconds to datetime and group by hours
+def powerlab_data_processing():
+    df = pd.read_csv(f"{powerlab_dir}actual_pv_power.csv")
+    df['datetime'] = df['Time'].apply(lambda t: datetime.fromtimestamp(t).strftime("%d-%m-%Y %H:00"))
+    df["freq"] = 1
+    df['zeros'] = df['PV power'].apply(lambda t: 1 if t == 0 else 0)
+    df = df.drop("Time", axis=1) 
+    df.rename(columns = {'datetime':'Time'}, inplace = True)
+    df = df.groupby(['Time']).sum()
+    df["PV power"] = df["PV power"]/(df["freq"] - df["zeros"]+1).round(3)
 
-
+    df = df.drop("freq", axis=1)  
+    df = df.drop("zeros", axis=1)
+    df.to_csv(f"{powerlab_dir}processed_actual_pv_power{df.index[-1][:10]}.csv")
+    
+    
+def powerlab_vs_predicted_plot():
+    from sklearn.metrics import mean_squared_error as mse
+    import matplotlib.pyplot as plt
+    df = pd.read_csv(f"{prediction_dir}pv_predicted_10-06-2022.csv")
+    df1 = pd.read_csv(f"{powerlab_dir}processed_actual_pv_power12-06-2022.csv")
+    df.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M') # Convert timestamp to datetime
+    df1.index = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M') # Convert timestamp to datetime       
+    fig = plt.figure(frameon=False)
+    fig.set_size_inches(16,9)
+    plt.plot(df["PV power"], "b", label="Predicted")
+    plt.plot(df1["PV power"], "tab:orange", label="Actual")
+    plt.legend(loc="upper right")
+    mse_score = mse(df["PV power"], df1["PV power"])
+    plt.title("Actual vs Predicted \n mse = " + str(round(mse_score,3)))
+    plt.savefig(f"overleaf_fig/predicted_vs_powerlab_11-06-2022.png", dpi=300)   
+    
 # preprocess_test_data()
 # update_data()
 # make_predictions_data()
+powerlab_data_processing()
+# powerlab_vs_predicted_plot()
 
 
 

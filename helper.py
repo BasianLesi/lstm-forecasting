@@ -291,3 +291,20 @@ def get_days_change_location(x):  # x is a list of strings
       location +=1  # update the location
   return xposition  # return the list of locations
   
+def plot_open_weather_data():
+  a = pd.read_csv(f"data/weather/past.csv")[100:]
+  df1 = pd.read_csv(f"data/weather/future.csv")
+  df1 = df1.drop(["PV power", "Solar radiation", "Wind power"], axis=1)
+  df1.rename(columns = {'Wind speed':'Wind speed predicted'}, inplace = True)
+  df1.rename(columns = {'Temperature':'Temperature predicted'}, inplace = True)
+  
+  a = a.merge(df1, on="Time", how="left")
+  plt.plot(a["Temperature predicted"][:1000], "red", label='Forecast')
+  plt.plot(a["Temperature"][:1000], "b", label='Actual', alpha=0.8)
+  plt.legend(loc='upper left')
+  mse_score = mse(a["Temperature predicted"], a["Temperature"])
+  plt.title("OpenWeather Temperature \n mse = " + str(round(mse_score,3)))
+  plt.ylabel("Temperature (℃)")
+  plt.xlabel("Time (Hours)")
+  plt.savefig("overleaf_fig/OpenWeather_temperature.png", dpi=300)
+  plt.show()

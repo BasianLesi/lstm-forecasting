@@ -113,7 +113,8 @@ def weather_api_call(url:str)->pd.DataFrame:
 
     for i in range(0, len(forecast["hourly"])):
         ts = forecast["hourly"][i]["dt"]
-        date_time = datetime.utcfromtimestamp(ts).strftime('%d-%m-%Y %H:%M')
+        #date_time = datetime.utcfromtimestamp(ts).strftime('%d-%m-%Y %H:%M')
+        date_time = datetime.fromtimestamp(ts).strftime("%d-%m-%Y %H:%M")
         time.append(date_time)
         temperature.append(forecast["hourly"][i]["temp"])
         uvi.append(forecast["hourly"][i]["uvi"]*100)
